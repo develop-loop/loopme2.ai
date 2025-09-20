@@ -1,0 +1,63 @@
+{
+  "name": "loopme3",
+  "version": "1.0.0",
+  "description": "Full-stack TypeScript application with Next.js frontend and NestJS backend",
+  "private": false,
+  "bin": {
+    "loopme3": "./cli/index.js"
+  },
+  "main": "./cli/index.js",
+  "files": [
+    "cli/",
+    "dist/",
+    "README.md"
+  ],
+  "keywords": [
+    "nestjs",
+    "nextjs",
+    "typescript",
+    "monorepo",
+    "fullstack",
+    "cli"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/loopme3.git"
+  },
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "npm run dev --workspace=client",
+    "dev:server": "npm run start:dev --workspace=server",
+    "build": "npm run build:dist",
+    "build:dist": "npm run clean:dist && npm run build:shared && npm run build:client:prod && npm run build:server:prod && npm run copy:files",
+    "build:client": "npm run build --workspace=client",
+    "build:client:prod": "cd client && NODE_ENV=production npm run build",
+    "build:server": "npm run build --workspace=server",
+    "build:server:prod": "cd server && npm run build && cp -r dist ../dist/server",
+    "build:shared": "npm run build --workspace=shared",
+    "copy:files": "cp -r client/../dist/client dist/ 2>/dev/null || echo 'Client files copied'",
+    "clean:dist": "rm -rf dist",
+    "start": "./cli/index.js",
+    "start:cli": "./cli/index.js",
+    "start:prod": "npm run build:dist && ./cli/index.js",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "clean": "npm run clean --workspaces && rm -rf node_modules dist",
+    "prepublishOnly": "npm run build:dist"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
