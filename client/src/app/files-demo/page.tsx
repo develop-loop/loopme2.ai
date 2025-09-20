@@ -1,23 +1,25 @@
 'use client';
 
 import { useState } from 'react';
-import { FilesApiClient, GetFilesResponse } from '@shared/client';
+import { GetFilesResponse } from '@shared/client';
+import { filesService } from '@/services';
 
 export default function FilesDemo() {
   const [fileContent, setFileContent] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
 
-  // 创建API客户端实例
-  const filesApi = new FilesApiClient('/api');
+  // 使用新的FilesService
 
   const loadFile = async () => {
     setLoading(true);
     setError('');
     
     try {
-      // 使用类型安全的API调用
-      const response: GetFilesResponse = await filesApi.getFile('test.txt');
+      // 使用新的FilesService - 类型安全的API调用
+      const response: GetFilesResponse = await filesService.getFiles({
+        file_paths: ['test.txt']
+      });
       
       if (response.success && response.data.files.length > 0) {
         setFileContent(response.data.files[0].content);
@@ -36,8 +38,8 @@ export default function FilesDemo() {
     setError('');
     
     try {
-      // 使用类型安全的API调用
-      await filesApi.saveFile({
+      // 使用新的FilesService - 类型安全的API调用
+      await filesService.saveFile({
         file_path: 'test.txt',
         content: fileContent,
         commit_message: 'Update from web interface',
@@ -58,10 +60,10 @@ export default function FilesDemo() {
     
     try {
       // 获取多个文件
-      const response = await filesApi.getFiles({
-        file_paths: ['test.txt', 'another.txt'],
-        encoding: 'text'
-      });
+      const response = await filesService.getMultipleFiles(
+        ['test.txt', 'another.txt'], 
+        'text'
+      );
       
       console.log(`Loaded ${response.data.success_count} files:`, response.data.files);
       
@@ -125,12 +127,13 @@ export default function FilesDemo() {
       </div>
       
       <div className="mt-6 p-4 bg-gray-100 rounded-md">
-        <h2 className="text-lg font-semibold mb-2">Type Safety Benefits:</h2>
+        <h2 className="text-lg font-semibold mb-2">FilesService Benefits:</h2>
         <ul className="text-sm text-gray-700 space-y-1">
-          <li>• IntelliSense support for API parameters</li>
-          <li>• Compile-time type checking</li>
-          <li>• Consistent request/response formats</li>
-          <li>• Shared types between frontend and backend</li>
+          <li>• 使用shared types确保前后端类型一致性</li>
+          <li>• 基于BaseApiService的统一错误处理</li>
+          <li>• IntelliSense支持和编译时类型检查</li>
+          <li>• 简化的API调用方法</li>
+          <li>• 自动URL构建和参数处理</li>
         </ul>
       </div>
     </div>
