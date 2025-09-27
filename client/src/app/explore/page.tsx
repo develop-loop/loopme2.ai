@@ -2,6 +2,7 @@
 
 import { useExplore, Column } from './useExplore'
 import { FileCard } from './fileCard'
+import { MilkdownEditorRef } from '../../components/MilkdownEditor'
 
 const LoadingView = () => (
   <div className="min-h-[calc(100vh-80px)] w-full bg-gray-50 flex items-center justify-center overflow-hidden">
@@ -32,7 +33,7 @@ interface ColumnComponentProps {
   savingFiles: Set<string>
   renamingFiles: Set<string>
   creatingFiles: Set<string>
-  setEditorRef: (filePath: string) => (ref: HTMLElement | null) => void
+  setEditorRef: (filePath: string) => (ref: MilkdownEditorRef | null) => void
   onSaveFile: (filePath: string, originalContent: string) => void
   onToggleExpansion: (filePath: string) => void
   onArchiveFile: (filePath: string) => void

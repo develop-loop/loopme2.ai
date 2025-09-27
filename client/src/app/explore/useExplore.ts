@@ -1,12 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { saveFile, renameFile, archiveFile, loadFileContent, countLines } from './utils'
 import { filesService } from '../../services/FilesService'
-
-// Simple editor ref interface as fallback
-interface SimpleEditorRef {
-  getContent: () => string
-  setContent: (content: string) => void
-}
+import { MilkdownEditorRef } from '../../components/MilkdownEditor'
 
 export interface Card {
   title: string
@@ -42,18 +37,11 @@ export const useExplore = () => {
   const [savingFiles, setSavingFiles] = useState<Set<string>>(new Set())
   const [renamingFiles, setRenamingFiles] = useState<Set<string>>(new Set())
   const [creatingFiles, setCreatingFiles] = useState<Set<string>>(new Set())
-  const editorRefs = useRef<Record<string, SimpleEditorRef>>({})
+  const editorRefs = useRef<Record<string, MilkdownEditorRef>>({})
 
-  const setEditorRef = (filePath: string) => (ref: HTMLElement | null) => {
-    // For now, we'll just store a simple ref without editor methods
-    // This can be expanded later when we add a proper editor
+  const setEditorRef = (filePath: string) => (ref: MilkdownEditorRef | null) => {
     if (ref) {
-      // Create a simple ref object for compatibility
-      const simpleRef: SimpleEditorRef = {
-        getContent: () => '', // Placeholder
-        setContent: () => {}  // Placeholder
-      }
-      editorRefs.current[filePath] = simpleRef
+      editorRefs.current[filePath] = ref
     } else {
       delete editorRefs.current[filePath]
     }
@@ -165,8 +153,8 @@ export const useExplore = () => {
         }))
       )
 
-      // Load content if not already loaded
-      if (!currentCard.isLoaded && !currentCard.isLoading) {
+      // Always reload content when expanding to ensure we have the latest version
+      if (!currentCard.isLoading) {
         await loadSingleFileContent(filePath)
       }
     }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Card } from './useExplore'
+import MilkdownEditor, { MilkdownEditorRef } from '../../components/MilkdownEditor'
 
 // Component interfaces
 export interface SaveButtonProps {
@@ -29,7 +30,7 @@ export interface FileCardProps {
   cardIndex: number
   savingFiles: Set<string>
   renamingFiles: Set<string>
-  setEditorRef: (filePath: string) => (ref: HTMLElement | null) => void
+  setEditorRef: (filePath: string) => (ref: MilkdownEditorRef | null) => void
   onSaveFile: (filePath: string, originalContent: string) => void
   onToggleExpansion: (filePath: string) => void
   onArchiveFile: (filePath: string) => void
@@ -158,19 +159,30 @@ export const EditableFileName = ({ fileName, onRename, isRenaming, isSaving = fa
   )
 }
 
-// Simple text editor component as fallback until MilkdownEditor is available
-const SimpleTextEditor = ({ content, onChange, className }: { content: string, onChange?: (content: string) => void, className?: string }) => {
+// Enhanced text editor using MilkdownEditor
+const EnhancedTextEditor = ({ 
+  content, 
+  fileType, 
+  className, 
+  editorRef 
+}: { 
+  content: string
+  fileType?: string
+  className?: string
+  editorRef?: (ref: MilkdownEditorRef | null) => void
+}) => {
   return (
-    <textarea
-      value={content}
-      onChange={(e) => onChange?.(e.target.value)}
-      className={`w-full h-40 p-3 border border-gray-300 rounded-md font-mono text-sm resize-vertical ${className}`}
-      placeholder="File content..."
+    <MilkdownEditor
+      ref={editorRef}
+      content={content}
+      fileType={fileType}
+      readOnly={false}
+      className={className}
     />
   )
 }
 
-export const FileCard = ({ card, cardIndex, savingFiles, renamingFiles, onSaveFile, onToggleExpansion, onArchiveFile, onRenameFile }: FileCardProps) => (
+export const FileCard = ({ card, cardIndex, savingFiles, renamingFiles, setEditorRef, onSaveFile, onToggleExpansion, onArchiveFile, onRenameFile }: FileCardProps) => (
   <div key={cardIndex} className="bg-white rounded-lg shadow p-4">
     <div className="flex items-center justify-between mb-2">
       <div className="flex items-center space-x-2 flex-1">
@@ -227,10 +239,12 @@ export const FileCard = ({ card, cardIndex, savingFiles, renamingFiles, onSaveFi
     {card.isExpanded && card.description && (
       <div className="text-sm">
         {card.isFileContent ? (
-          // Using simple text editor for now - can be replaced with MilkdownEditor when available
-          <SimpleTextEditor
+          // Using enhanced MilkdownEditor for file content editing
+          <EnhancedTextEditor
             content={card.description}
+            fileType={card.fileType}
             className="mt-2"
+            editorRef={setEditorRef(card.title)}
           />
         ) : (
           <p className="text-gray-600">{card.description}</p>
