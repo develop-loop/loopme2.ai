@@ -31,7 +31,7 @@ const isProd = process.env.NODE_ENV === 'production';
     // 生产环境下提供静态文件服务
     ...(isProd ? [
       ServeStaticModule.forRoot({
-        rootPath: join(__dirname, '..', 'client'),
+        rootPath: join(__dirname, '..', '..', '..', 'client'),
         exclude: ['/api*'],
       }),
     ] : []),
