@@ -52,7 +52,7 @@
     "build:server": "npm run build --workspace=server",
     "build:server:prod": "cd server && npm run build && cp -r dist ../dist/server",
     "build:shared": "npm run build --workspace=shared",
-    "copy:files": "cp -r client/../dist/client dist/ 2>/dev/null || echo 'Client files copied'",
+    "copy:files": "cp -r shared/dist dist/shared 2>/dev/null && cp -r client/../dist/client dist/ 2>/dev/null || echo 'Files copied'",
     "clean:dist": "rm -rf dist",
     "start": "./cli/index.js",
     "start:cli": "./cli/index.js",
