@@ -124,9 +124,9 @@ export default function Header() {
       <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-8">
         <div className="flex items-center lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5 mr-4">
-            <span className="sr-only">LoopMe3</span>
+            <span className="sr-only">TurboMe</span>
             <div className="h-8 w-8 bg-indigo-600 rounded-md flex items-center justify-center">
-              <span className="text-white font-bold text-sm">L3</span>
+              <span className="text-white font-bold text-sm">TM</span>
             </div>
           </Link>
           
@@ -268,9 +268,9 @@ export default function Header() {
         >
           <div className="flex items-center justify-between">
             <Link href="/" className="-m-1.5 p-1.5">
-              <span className="sr-only">LoopMe3</span>
+              <span className="sr-only">TurboMe</span>
               <div className="h-8 w-8 bg-indigo-600 rounded-md flex items-center justify-center">
-                <span className="text-white font-bold text-sm">L3</span>
+                <span className="text-white font-bold text-sm">TM</span>
               </div>
             </Link>
             <button

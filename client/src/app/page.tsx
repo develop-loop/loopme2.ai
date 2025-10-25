@@ -6,7 +6,7 @@ export default function HomePage() {
       <div className="max-w-6xl mx-auto">
         <header className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            LoopMe3
+            TurboMe
           </h1>
           <p className="text-lg text-gray-600 mb-8">
             Next.js 15 + NestJS + TypeScript + Tailwind CSS + Headless UI

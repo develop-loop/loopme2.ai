@@ -70,4 +70,4 @@ scripts/
 # Optional: Keep package small
 client/public/
 shared/data/
-loopme.yaml
+turbome.yaml

@@ -1,4 +1,4 @@
-# LoopMe
+# TurboMe
 
 A powerful markdown-based workspace and knowledge management system with Git integration.
 
@@ -15,7 +15,7 @@ A powerful markdown-based workspace and knowledge management system with Git int
 ## 📦 Installation
 
 ```bash
-npm install -g loopme
+npm install -g turbome
 ```
 
 ## 🚀 Quick Start
@@ -23,9 +23,9 @@ npm install -g loopme
 ### Start the server
 
 ```bash
-loopme start
+turbome start
 # or simply
-loopme
+turbome
 ```
 
 The server will start on port 7788 by default. Open your browser and navigate to:
@@ -35,16 +35,16 @@ The server will start on port 7788 by default. Open your browser and navigate to
 ### Command Line Options
 
 ```bash
-loopme --help        # Show help
-loopme --version     # Show version
-loopme start         # Start the server (default)
+turbome --help        # Show help
+turbome --version     # Show version
+turbome start         # Start the server (default)
 ```
 
 ### Environment Variables
 
 ```bash
-PORT=8080 loopme     # Use custom port (default: 7788)
-STORAGE_DIR=/path/to/files loopme  # Set storage directory
+PORT=8080 turbome     # Use custom port (default: 7788)
+STORAGE_DIR=/path/to/files turbome  # Set storage directory
 ```
 
 ## 📚 Usage
@@ -84,7 +84,7 @@ Archive files by removing them from workspaces:
 
 ## 🛠️ API
 
-LoopMe provides a comprehensive RESTful API:
+TurboMe provides a comprehensive RESTful API:
 
 ### V1 Endpoints
 
@@ -114,8 +114,8 @@ fetch('http://localhost:7788/api/v1/workspaces')
 
 ```bash
 # Clone the repository
-git clone https://github.com/develop-loop/loopme2.ai.git
-cd loopme2.ai
+git clone https://github.com/develop-loop/turbome.ai.git
+cd turbome.ai
 
 # Install dependencies
 npm install
@@ -256,7 +256,7 @@ This project is licensed under the MIT License.
 
 ## 🐛 Issues
 
-Found a bug or have a suggestion? Please open an issue at [GitHub Issues](https://github.com/develop-loop/loopme2.ai/issues).
+Found a bug or have a suggestion? Please open an issue at [GitHub Issues](https://github.com/develop-loop/turbome.ai/issues).
 
 ## 🙏 Acknowledgments
 
@@ -267,7 +267,7 @@ Found a bug or have a suggestion? Please open an issue at [GitHub Issues](https:
 
 ---
 
-Made with ❤️ by LoopMe Contributors
+Made with ❤️ by TurboMe Contributors
 
 ## Development vs Production
 
@@ -382,5 +382,5 @@ await filesApi.saveFile({
 - **Example**: 
   ```bash
   # Files stored in current directory
-  loopme3
+  turbome
   ```

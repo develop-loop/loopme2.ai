@@ -1,5 +1,5 @@
 {
-  "name": "@loopme3/client",
+  "name": "@turbome/client",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,7 +11,7 @@
   "dependencies": {
     "@headlessui/react": "^2.2.8",
     "@heroicons/react": "^2.2.0",
-    "@loopme3/shared": "file:../shared",
+    "@turbome/shared": "file:../shared",
     "@milkdown/crepe": "^7.16.0",
     "@milkdown/kit": "^7.16.0",
     "@milkdown/preset-commonmark": "^7.16.0",

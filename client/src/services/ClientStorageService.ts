@@ -12,7 +12,7 @@ interface StorageData {
 }
 
 export class ClientStorageService {
-  private readonly PREFIX = 'loopme3_'
+  private readonly PREFIX = 'turbome_'
 
   /**
    * 获取完整的storage key
@@ -99,7 +99,7 @@ export class ClientStorageService {
   }
 
   /**
-   * 清理所有loopme3相关的数据
+   * 清理所有turbome相关的数据
    */
   clearAll(): boolean {
     try {

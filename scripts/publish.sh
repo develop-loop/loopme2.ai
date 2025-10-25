@@ -2,7 +2,7 @@
 
 set -e
 
-echo "🏗️  Building LoopMe3 for production..."
+echo "🏗️  Building TurboMe for production..."
 npm run build:dist
 
 echo "📝 Checking package.json..."

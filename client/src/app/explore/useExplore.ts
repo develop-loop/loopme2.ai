@@ -454,7 +454,7 @@ Your content here...
       setLoading(true)
       setError(null)
       
-      // Use V1 Workspace API instead of reading loopme.yaml directly
+      // Use V1 Workspace API instead of reading turbome.yaml directly
       const response = await v1WorkspaceService.getWorkspaces()
       
       if (!response.success) {

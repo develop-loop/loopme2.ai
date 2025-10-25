@@ -9,7 +9,7 @@ async function bootstrap() {
 
   // Swagger配置
   const config = new DocumentBuilder()
-    .setTitle('LoopMe3 API')
+    .setTitle('TurboMe API')
     .setDescription('Full-stack TypeScript application API documentation')
     .setVersion('1.0')
     .addTag('General', 'General application endpoints')
@@ -21,7 +21,7 @@ async function bootstrap() {
   
   // 设置Swagger UI
   SwaggerModule.setup('api/docs', app, document, {
-    customSiteTitle: 'LoopMe3 API Documentation',
+    customSiteTitle: 'TurboMe API Documentation',
     customfavIcon: '/favicon.ico',
     customCss: '.swagger-ui .topbar { display: none }',
   });

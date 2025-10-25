@@ -1,7 +1,7 @@
 {
-  "name": "@loopme3/server",
+  "name": "@turbome/server",
   "version": "1.0.0",
-  "description": "NestJS backend server for LoopMe3",
+  "description": "NestJS backend server for TurboMe",
   "main": "dist/main.js",
   "scripts": {
     "build": "nest build",
@@ -18,7 +18,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@loopme3/shared": "file:../shared",
+    "@turbome/shared": "file:../shared",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",

@@ -1,10 +1,10 @@
 {
-  "name": "loopme",
-  "version": "1.0.7",
+  "name": "turbome",
+  "version": "1.0.0",
   "description": "A powerful markdown-based workspace and knowledge management system with Git integration",
   "private": false,
   "bin": {
-    "loopme": "./cli/index.js"
+    "turbome": "./cli/index.js"
   },
   "main": "./cli/index.js",
   "files": [
@@ -26,15 +26,15 @@
     "document-management",
     "note-taking"
   ],
-  "author": "LoopMe Contributors",
+  "author": "TurboMe Contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/develop-loop/loopme2.ai.git"
+    "url": "https://github.com/develop-loop/turbome.ai.git"
   },
-  "homepage": "https://github.com/develop-loop/loopme2.ai#readme",
+  "homepage": "https://github.com/develop-loop/turbome.ai#readme",
   "bugs": {
-    "url": "https://github.com/develop-loop/loopme2.ai/issues"
+    "url": "https://github.com/develop-loop/turbome.ai/issues"
   },
   "workspaces": [
     "client",

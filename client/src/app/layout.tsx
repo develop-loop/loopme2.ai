@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LoopMe3",
+  title: "TurboMe",
   description: "Full-stack TypeScript application with Next.js and NestJS",
 };
 

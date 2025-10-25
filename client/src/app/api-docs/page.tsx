@@ -94,7 +94,7 @@ export default function ApiDocsPage() {
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-3xl font-bold">API Documentation</h1>
           <p className="mt-2 text-indigo-200">
-            Comprehensive documentation for LoopMe3 APIs
+            Comprehensive documentation for TurboMe APIs
           </p>
         </div>
       </div>

@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 
 function startServer() {
-  console.log('🚀 Starting LoopMe server...');
+  console.log('🚀 Starting TurboMe server...');
   
   // 设置生产环境
   process.env.NODE_ENV = 'production';
@@ -67,10 +67,10 @@ switch (command) {
   case '--help':
   case '-h':
     console.log(`
-LoopMe3 CLI
+TurboMe CLI
 
 Usage:
-  loopme3 [command]
+  turbome [command]
 
 Commands:
   start          Start the server (default)
@@ -81,13 +81,13 @@ Environment Variables:
   PORT           Server port (default: 7788)
 
 Examples:
-  loopme3
-  loopme3 start
-  PORT=8080 loopme3
+  turbome
+  turbome start
+  PORT=8080 turbome
     `);
     break;
   default:
     console.error(`❌ Unknown command: ${command}`);
-    console.log('Run "loopme3 --help" for usage information.');
+    console.log('Run "turbome --help" for usage information.');
     process.exit(1);
 }

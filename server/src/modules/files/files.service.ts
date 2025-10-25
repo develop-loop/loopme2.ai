@@ -366,7 +366,7 @@ export class FilesService {
         await this.gitUtil.commit({
           commitMessage: `Delete ${filePath}`,
           authorName: 'System',
-          authorEmail: 'system@loopme3.ai'
+          authorEmail: 'system@turbome.ai'
         });
         console.log(`Git commit successful for file deletion: ${filePath}`);
       } catch (error) {
