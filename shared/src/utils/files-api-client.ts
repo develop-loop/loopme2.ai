@@ -1,4 +1,4 @@
-import { GetFilesRequest, GetFilesResponse, SaveFileRequest, SaveFileResponse, DeleteFileRequest, DeleteFileResponse } from '../types/files';
+import { GetFilesRequest, GetFilesResponse, SaveFileRequest, SaveFileResponse, DeleteFileRequest, DeleteFileResponse, DeleteMultipleFilesResponse, SaveMultipleFilesRequest, SaveMultipleFilesResponse } from '../types/files';
 
 export class FilesApiClient {
   private baseUrl: string;
@@ -42,49 +42,74 @@ export class FilesApiClient {
   }
 
   /**
-   * 保存文件
+   * 保存单个文件 (向后兼容)
    */
   async saveFile(request: SaveFileRequest): Promise<SaveFileResponse> {
-    const params = new URLSearchParams();
-    params.append('file_path', request.file_path);
+    // 使用新的批量保存API保存单个文件
+    const multipleResponse = await this.saveMultipleFiles({
+      files: [request]
+    });
+    
+    if (multipleResponse.success && multipleResponse.data.results.length > 0) {
+      return {
+        success: true,
+        data: multipleResponse.data.results[0],
+        message: multipleResponse.message
+      };
+    } else {
+      throw new Error(multipleResponse.data.errors?.[0]?.message || 'Failed to save file');
+    }
+  }
 
-    const body = {
-      content: request.content,
-      encoding: request.encoding,
-      commit_message: request.commit_message,
-      author_name: request.author_name,
-      author_email: request.author_email,
-      previous_path: request.previous_path,
-    };
-
-    const response = await fetch(`${this.baseUrl}/files?${params.toString()}`, {
+  /**
+   * 批量保存文件
+   */
+  async saveMultipleFiles(request: SaveMultipleFilesRequest): Promise<SaveMultipleFilesResponse> {
+    const response = await fetch(`${this.baseUrl}/files`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(request),
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to save file: ${response.statusText}`);
+      throw new Error(`Failed to save files: ${response.statusText}`);
     }
 
     return response.json();
   }
 
   /**
-   * 删除文件
+   * 删除单个文件 (向后兼容)
    */
-  async deleteFile(request: DeleteFileRequest): Promise<DeleteFileResponse> {
+  async deleteFile(filePath: string): Promise<DeleteFileResponse> {
+    // 使用新的批量删除API删除单个文件
+    const multipleResponse = await this.deleteMultipleFiles([filePath]);
+    
+    if (multipleResponse.success && multipleResponse.data.results.length > 0) {
+      return {
+        success: true,
+        message: multipleResponse.message
+      };
+    } else {
+      throw new Error(multipleResponse.data.errors?.[0]?.message || 'Failed to delete file');
+    }
+  }
+
+  /**
+   * 批量删除文件
+   */
+  async deleteMultipleFiles(filePaths: string[]): Promise<DeleteMultipleFilesResponse> {
     const params = new URLSearchParams();
-    params.append('file_path', request.file_path);
+    params.append('file_paths', JSON.stringify(filePaths));
 
     const response = await fetch(`${this.baseUrl}/files?${params.toString()}`, {
       method: 'DELETE',
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to delete file: ${response.statusText}`);
+      throw new Error(`Failed to delete files: ${response.statusText}`);
     }
 
     return response.json();

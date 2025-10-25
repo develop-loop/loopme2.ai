@@ -1,87 +1,146 @@
-# LoopMe3 Monorepo
+# LoopMe
 
-A full-stack TypeScript monorepo with Next.js frontend, NestJS backend, and shared types/DTOs.
+A powerful markdown-based workspace and knowledge management system with Git integration.
 
-## Project Structure
+## ✨ Features
 
-```
-├── client/          # Next.js frontend application
-├── server/          # NestJS backend application  
-├── shared/          # Shared types, DTOs, and utilities
-├── package.json     # Root workspace configuration
-└── tsconfig.json    # Base TypeScript configuration
-```
+- 📝 **Markdown-First**: Organize your documents using markdown files with frontmatter metadata
+- 🗂️ **Smart Workspaces**: Automatically organize files into workspaces based on frontmatter
+- 🔄 **Git Integration**: Full version control support with commit history and diff viewing
+- 🎨 **Rich Editor**: Built-in Milkdown editor with live preview
+- 🚀 **Fast Search**: Powerful file search using ripgrep
+- 🔧 **RESTful API**: Comprehensive V1 API for all operations
+- 💾 **Local Storage**: Settings stored locally for better performance
 
-## Prerequisites
+## 📦 Installation
 
-- Node.js 18+ 
-- npm 9+ (for workspace support)
-
-## Setup
-
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-2. **Build shared package:**
-   ```bash
-   npm run build:shared
-   ```
-
-3. **Install workspace dependencies:**
-   ```bash
-   npm install --workspaces
-   ```
-
-## Development
-
-### Start all services
 ```bash
+npm install -g loopme
+```
+
+## 🚀 Quick Start
+
+### Start the server
+
+```bash
+loopme start
+# or simply
+loopme
+```
+
+The server will start on port 7788 by default. Open your browser and navigate to:
+- Frontend: http://localhost:7788
+- API Documentation: http://localhost:7788/api-docs
+
+### Command Line Options
+
+```bash
+loopme --help        # Show help
+loopme --version     # Show version
+loopme start         # Start the server (default)
+```
+
+### Environment Variables
+
+```bash
+PORT=8080 loopme     # Use custom port (default: 7788)
+STORAGE_DIR=/path/to/files loopme  # Set storage directory
+```
+
+## 📚 Usage
+
+### Creating Files
+
+1. Navigate to the Explore page
+2. Click "New Item" in any workspace
+3. Files are automatically created with timestamps as filenames
+
+### Managing Workspaces
+
+Workspaces are automatically created based on the `workspace` field in markdown frontmatter:
+
+```markdown
+---
+workspace: my-project
+title: My Document
+---
+
+# Content here
+```
+
+### Transferring Files
+
+Files can be transferred between workspaces using the transfer button:
+1. Click the transfer icon next to any file
+2. Select target workspace or create a new one
+3. File's frontmatter is automatically updated
+
+### Archiving Files
+
+Archive files by removing them from workspaces:
+1. Click the archive button on any file
+2. The file's workspace frontmatter is removed
+3. File remains in the filesystem but not shown in workspaces
+
+## 🛠️ API
+
+LoopMe provides a comprehensive RESTful API:
+
+### V1 Endpoints
+
+- `GET /api/v1/workspaces` - List all workspaces
+- `GET /api/v1/files/markdown` - Get markdown files
+- `PUT /api/v1/files/markdown` - Save markdown files
+- `PUT /api/v1/files/markdown/frontmatter` - Update frontmatter
+- `DELETE /api/v1/files/markdown/frontmatter` - Delete frontmatter fields
+
+### Example
+
+```javascript
+// Get all workspaces
+fetch('http://localhost:7788/api/v1/workspaces')
+  .then(res => res.json())
+  .then(data => console.log(data));
+```
+
+## 🏗️ Development
+
+### Prerequisites
+
+- Node.js >= 18
+- npm >= 9
+
+### Local Development
+
+```bash
+# Clone the repository
+git clone https://github.com/develop-loop/loopme2.ai.git
+cd loopme2.ai
+
+# Install dependencies
+npm install
+
+# Start development servers
 npm run dev
 ```
 
-This will start:
-- Frontend (Next.js): http://localhost:3000
-- Backend (NestJS): http://localhost:3001
+This starts:
+- Frontend dev server on http://localhost:3000
+- Backend dev server on http://localhost:7788
 
-### Individual services
-```bash
-# Frontend only
-npm run dev:client
-
-# Backend only  
-npm run dev:server
-
-# Shared package (watch mode)
-cd shared && npm run dev
-```
-
-## Build
-
-### Build all packages
-```bash
-npm run build
-```
-
-### Individual builds
-```bash
-npm run build:client
-npm run build:server
-npm run build:shared
-```
-
-## Testing
+### Building
 
 ```bash
-# Run tests for all packages
-npm run test
-
-# Run linting for all packages
-npm run lint
+npm run build:dist
 ```
 
-## Architecture
+### Testing
+
+```bash
+npm test
+```
+
+## 🏗️ Architecture
 
 ### Frontend (client/)
 - **Framework:** Next.js 15 with TypeScript
@@ -173,28 +232,42 @@ The Swagger UI provides:
 - Interactive testing interface
 - Authentication support (if configured)
 
-## CLI Usage
+## 📝 Configuration
 
-After publishing to npm, users can install and use your application:
+Settings are stored in browser localStorage:
 
-```bash
-# Install globally
-npm install -g loopme3
+- **Draft Path**: Default location for new files (default: `./drafts`)
 
-# Start the application
-loopme3
+Access settings at: http://localhost:7788/settings/explore
 
-# Or with custom port
-PORT=8080 loopme3
+## 🤝 Contributing
 
-# Show help
-loopme3 --help
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-# Show version
-loopme3 --version
-```
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-The CLI will start the NestJS server which serves both the API and the static frontend files.
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🐛 Issues
+
+Found a bug or have a suggestion? Please open an issue at [GitHub Issues](https://github.com/develop-loop/loopme2.ai/issues).
+
+## 🙏 Acknowledgments
+
+- Built with [Next.js](https://nextjs.org/)
+- Backend powered by [NestJS](https://nestjs.com/)
+- Editor powered by [Milkdown](https://milkdown.dev/)
+- Search powered by [ripgrep](https://github.com/BurntSushi/ripgrep)
+
+---
+
+Made with ❤️ by LoopMe Contributors
 
 ## Development vs Production
 

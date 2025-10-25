@@ -1,0 +1,73 @@
+# Source code (only include built files)
+client/src
+server/src
+shared/src
+*.ts
+*.tsx
+!*.d.ts
+
+# Development files
+tsconfig.json
+*.tsbuildinfo
+nest-cli.json
+next.config.ts
+postcss.config.mjs
+tailwind.config.ts
+eslint.config.mjs
+
+# Environment files
+.env
+.env.*
+*.env
+
+# Development dependencies and node_modules
+node_modules/
+client/node_modules/
+server/node_modules/
+shared/node_modules/
+
+# Build cache and temporary files
+client/.next/
+server/dist/**/*.map
+*.log
+*.tmp
+.cache
+.temp
+
+# Git and IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+**/__tests__/
+coverage/
+
+# Documentation source
+docs/
+*.md
+!README.md
+
+# Examples and demos
+examples/
+demo/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.circleci/
+
+# Development scripts
+scripts/
+!scripts/publish.sh
+
+# Optional: Keep package small
+client/public/
+shared/data/
+loopme.yaml

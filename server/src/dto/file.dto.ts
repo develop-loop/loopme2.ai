@@ -1,6 +1,7 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { SaveFileRequest, GetFilesRequest } from '@shared/types/files';
+import { SaveFileRequest, GetFilesRequest, SaveMultipleFilesRequest } from '@shared/types/files';
 
 export class SaveFileDto implements SaveFileRequest {
   @ApiProperty({ example: 'test.txt', description: 'Path where the file will be saved' })
@@ -37,6 +38,28 @@ export class SaveFileDto implements SaveFileRequest {
   @IsString()
   @IsOptional()
   previous_path?: string;
+}
+
+export class SaveMultipleFilesDto implements SaveMultipleFilesRequest {
+  @ApiProperty({ 
+    type: [SaveFileDto], 
+    description: 'Array of files to save',
+    example: [
+      {
+        file_path: 'test.txt',
+        content: 'Hello World',
+        encoding: 'text',
+        commit_message: 'Update file content',
+        author_name: 'John Doe',
+        author_email: 'john@example.com',
+        previous_path: 'old-file.txt'
+      }
+    ]
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SaveFileDto)
+  files: SaveFileDto[];
 }
 
 export class GetFilesDto implements GetFilesRequest {

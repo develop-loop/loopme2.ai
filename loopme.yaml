@@ -1,0 +1,13 @@
+explore:
+  workspace:
+    - name: "Documents"
+      files:
+        - "README.md"
+        - "docs/guide.md"
+    - name: "Code"
+      files:
+        - "src/main.js"
+        - "src/utils.js"
+
+settings:
+  draftPath: "./drafts"

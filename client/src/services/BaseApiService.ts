@@ -162,7 +162,7 @@ export abstract class BaseApiService {
   /**
    * 执行DELETE请求
    */
-  protected async delete<T>(endpoint: string, params?: Record<string, string | string[] | boolean | undefined>): Promise<T> {
+  protected async delete<T>(endpoint: string, data?: unknown, params?: Record<string, string | string[] | boolean | undefined>): Promise<T> {
     const url = ApiUtils.buildUrl(this.baseUrl, endpoint, params);
     
     const response = await fetch(url, {
@@ -170,6 +170,7 @@ export abstract class BaseApiService {
       headers: {
         'Content-Type': 'application/json',
       },
+      body: data ? JSON.stringify(data) : undefined,
     });
 
     return ApiUtils.handleResponse<T>(response);

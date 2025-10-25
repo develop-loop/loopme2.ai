@@ -1,132 +1,117 @@
-import { filesService } from '../../services/FilesService'
+import { v1FilesService } from '../../services/V1FilesService'
 
-// File operations using new FilesService
-export const saveFile = async (filePath: string, content: string) => {
-  const response = await filesService.saveFile({
-    file_path: filePath,
-    content: content,
-    encoding: 'text',
-    commit_message: `Update ${filePath}`,
-    author_name: 'User',
-    author_email: 'user@example.com'
-  })
+// File operations using V1 Files API for markdown files only
+export const saveFile = async (filePath: string, content: string, workspace?: string) => {
+  // Only support markdown files
+  if (!filePath.endsWith('.md') && !filePath.endsWith('.markdown')) {
+    throw new Error('Only markdown files are supported in explore mode')
+  }
+
+  if (!workspace) {
+    throw new Error('Workspace is required for markdown files')
+  }
+  
+  // Use V1 Files API for markdown files with workspace in frontmatter
+  const response = await v1FilesService.saveMarkdownWithWorkspace(
+    filePath,
+    content,
+    workspace,
+    `Update ${filePath}`,
+    'User',
+    'user@example.com'
+  )
 
   if (!response.success) {
-    throw new Error('Failed to save file')
+    throw new Error('Failed to save markdown file')
   }
 
   return response
 }
 
-export const renameFile = async (oldPath: string, newPath: string) => {
-  // Get current file content
-  const response = await filesService.getFile(oldPath)
+export const renameFile = async (oldPath: string, newPath: string, workspace?: string) => {
+  // Only support markdown files
+  if (!oldPath.endsWith('.md') && !oldPath.endsWith('.markdown')) {
+    throw new Error('Only markdown files are supported in explore mode')
+  }
+
+  if (!workspace) {
+    throw new Error('Workspace is required for markdown files')
+  }
+
+  // Get current markdown file content using V1 API
+  const response = await v1FilesService.getMarkdown(oldPath)
   if (!response.success || response.data.error_count > 0) {
-    throw new Error('Failed to fetch file content')
+    throw new Error('Failed to fetch markdown file content')
   }
 
-  const fileData = response.data.files[0]
-  if (!fileData) {
-    throw new Error('File not found')
+  const markdownData = response.data.markdowns[0]
+  if (!markdownData) {
+    throw new Error('Markdown file not found')
   }
 
-  // Get file content
-  let fileContent = fileData.content
-  if (fileData.encoding === 'base64') {
-    fileContent = atob(fileData.content)
-  }
-
-  // Rename the file using save with previous_path
-  const renameResponse = await filesService.saveFile({
-    file_path: newPath,
-    content: fileContent,
-    encoding: 'text',
-    previous_path: oldPath,
-    commit_message: `Rename ${oldPath} to ${newPath}`,
-    author_name: 'User',
-    author_email: 'user@example.com'
-  })
+  // Rename the markdown file using V1 API with workspace preservation
+  const renameResponse = await v1FilesService.renameMarkdownWithWorkspace(
+    oldPath,
+    newPath,
+    markdownData.content,
+    workspace,
+    `Rename ${oldPath} to ${newPath}`,
+    'User',
+    'user@example.com',
+    markdownData.frontmatter
+  )
 
   if (!renameResponse.success) {
-    throw new Error('Failed to rename file')
+    throw new Error('Failed to rename markdown file')
   }
 
   return renameResponse
 }
 
 export const archiveFile = async (filePath: string) => {
-  // Get current explore.yaml content
-  const response = await filesService.getFile('explore.yaml')
-  if (!response.success || response.data.error_count > 0) {
-    throw new Error('Failed to fetch explore.yaml')
+  // Only support markdown files
+  if (!filePath.endsWith('.md') && !filePath.endsWith('.markdown')) {
+    throw new Error('Only markdown files are supported in explore mode')
   }
 
-  const fileData = response.data.files[0]
-  if (!fileData) {
-    throw new Error('explore.yaml not found')
+  // Use V1 API to delete workspace frontmatter for markdown files
+  const response = await v1FilesService.deleteFrontmatterKeys(
+    filePath,
+    ['workspace'],
+    `Archive ${filePath} by removing workspace`,
+    'User',
+    'user@example.com'
+  )
+
+  if (!response.success) {
+    throw new Error('Failed to archive markdown file')
   }
 
-  // Parse current YAML content
-  let yamlContent = fileData.content
-  if (fileData.encoding === 'base64') {
-    yamlContent = atob(fileData.content)
-  }
-
-  // Remove file from YAML
-  const modifiedYaml = removeFileFromYaml(yamlContent, filePath)
-
-  // Update explore.yaml file
-  const updateResponse = await filesService.saveFile({
-    file_path: 'explore.yaml',
-    content: modifiedYaml,
-    encoding: 'text',
-    commit_message: `Archive ${filePath} from explore configuration`,
-    author_name: 'User',
-    author_email: 'user@example.com'
-  })
-
-  if (!updateResponse.success) {
-    throw new Error('Failed to update explore.yaml')
-  }
-
-  return updateResponse
+  return response
 }
 
 export const loadFileContent = async (filePath: string) => {
-  const response = await filesService.getFile(filePath)
-  
-  if (!response.success || response.data.error_count > 0) {
-    throw new Error('Failed to load file content')
-  }
-  
-  const fileData = response.data.files[0]
-  if (!fileData) {
-    throw new Error('File not found')
-  }
-  
-  // Parse file content
-  let displayContent = 'File not found'
-  if (fileData.content) {
-    if (fileData.encoding === 'base64') {
-      displayContent = atob(fileData.content)
-    } else {
-      displayContent = fileData.content
-    }
-    
-    // Try to parse as JSON if it's a JSON file
-    if (fileData.mime_type === 'application/json' || filePath.endsWith('.json')) {
-      try {
-        const parsed = JSON.parse(displayContent)
-        displayContent = JSON.stringify(parsed, null, 2)
-      } catch {
-        // Keep as string if JSON parsing fails
-      }
-    }
+  // Only support markdown files
+  if (!filePath.endsWith('.md') && !filePath.endsWith('.markdown')) {
+    throw new Error('Only markdown files are supported in explore mode')
   }
 
+  // Use V1 API for markdown files
+  const response = await v1FilesService.getMarkdown(filePath)
+  
+  if (!response.success || response.data.error_count > 0) {
+    throw new Error('Failed to load markdown file content')
+  }
+  
+  const markdownData = response.data.markdowns[0]
+  if (!markdownData) {
+    throw new Error('Markdown file not found')
+  }
+  
   return {
-    content: displayContent,
-    lineCount: countLines(displayContent)
+    content: markdownData.content,
+    lineCount: countLines(markdownData.content),
+    frontmatter: markdownData.frontmatter
   }
 }
 
@@ -136,47 +121,10 @@ export const countLines = (content: string): number => {
   return content.split('\n').length
 }
 
-const removeFileFromYaml = (yamlContent: string, filePathToRemove: string): string => {
-  const lines = yamlContent.split('\n')
-  const result: string[] = []
-  let inFilesSection = false
-  let currentWorkspaceIndent = 0
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
-    const trimmed = line.trim()
-
-    // Track workspace sections
-    if (line.startsWith('  - name:')) {
-      currentWorkspaceIndent = line.search(/\S/)
-      inFilesSection = false
-      result.push(line)
-      continue
-    }
-
-    // Track files section
-    if (line.startsWith('    files:') && currentWorkspaceIndent > 0) {
-      inFilesSection = true
-      result.push(line)
-      continue
-    }
-
-    // Check for file to remove
-    if (inFilesSection && line.startsWith('      - ')) {
-      const fileName = trimmed.substring(2).replace(/['\"]/g, '')
-      if (fileName === filePathToRemove) {
-        // Skip this file entry
-        continue
-      }
-    }
-
-    // End of files section
-    if (inFilesSection && line.startsWith('  - ') && !line.includes('name:')) {
-      inFilesSection = false
-    }
-
-    result.push(line)
-  }
-
-  return result.join('\n')
+// Helper function to get workspace from file path by checking which workspace contains it
+export const getWorkspaceForFile = (filePath: string, columns: Array<{title: string, cards: Array<{title: string}>}>): string | undefined => {
+  return columns.find(col => 
+    col.cards.some(card => card.title === filePath)
+  )?.title
 }
+

@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 
 function startServer() {
-  console.log('🚀 Starting LoopMe3 server...');
+  console.log('🚀 Starting LoopMe server...');
   
   // 设置生产环境
   process.env.NODE_ENV = 'production';

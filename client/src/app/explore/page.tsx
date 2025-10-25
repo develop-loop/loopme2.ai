@@ -33,16 +33,20 @@ interface ColumnComponentProps {
   savingFiles: Set<string>
   renamingFiles: Set<string>
   creatingFiles: Set<string>
+  savedFiles: Set<string>
+  editingFiles: Set<string>
   setEditorRef: (filePath: string) => (ref: MilkdownEditorRef | null) => void
   onSaveFile: (filePath: string, originalContent: string) => void
+  onFileEdit: (filePath: string) => void
   onToggleExpansion: (filePath: string) => void
   onArchiveFile: (filePath: string) => void
-  onRemoveWorkspace: (workspaceName: string) => void
   onRenameFile: (oldPath: string, newPath: string) => void
+  onTransferFile: (filePath: string, targetWorkspace: string) => void
+  getAvailableWorkspacesForFile: (filePath: string) => string[]
   onCreateNewFile: (workspaceName: string) => void
 }
 
-const ColumnComponent = ({ column, index, totalColumns, savingFiles, renamingFiles, creatingFiles, setEditorRef, onSaveFile, onToggleExpansion, onArchiveFile, onRemoveWorkspace, onRenameFile, onCreateNewFile }: ColumnComponentProps) => (
+const ColumnComponent = ({ column, index, totalColumns, savingFiles, renamingFiles, creatingFiles, savedFiles, editingFiles, setEditorRef, onSaveFile, onFileEdit, onToggleExpansion, onArchiveFile, onRenameFile, onTransferFile, getAvailableWorkspacesForFile, onCreateNewFile }: ColumnComponentProps) => (
   <div
     key={column.title}
     className={`flex-1 overflow-y-auto bg-gray-50 overscroll-none ${
@@ -63,11 +67,16 @@ const ColumnComponent = ({ column, index, totalColumns, savingFiles, renamingFil
               cardIndex={cardIndex}
               savingFiles={savingFiles}
               renamingFiles={renamingFiles}
+              savedFiles={savedFiles}
+              editingFiles={editingFiles}
               setEditorRef={setEditorRef}
               onSaveFile={onSaveFile}
+              onFileEdit={onFileEdit}
               onToggleExpansion={onToggleExpansion}
               onArchiveFile={onArchiveFile}
               onRenameFile={onRenameFile}
+              onTransferFile={onTransferFile}
+              availableWorkspaces={getAvailableWorkspacesForFile(card.title)}
             />
           ))}
           
@@ -134,21 +143,6 @@ const ColumnComponent = ({ column, index, totalColumns, savingFiles, renamingFil
                   )}
                 </div>
               </button>
-              <button
-                onClick={() => {
-                  if (confirm(`Are you sure you want to remove the workspace "${column.title}"?`)) {
-                    onRemoveWorkspace(column.title)
-                  }
-                }}
-                className="w-full p-4 border-2 border-dashed rounded-lg transition-colors border-red-300 hover:border-red-400 hover:bg-red-50"
-              >
-                <div className="flex flex-col items-center text-red-600">
-                  <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  <span className="text-sm font-medium">Remove Workspace</span>
-                </div>
-              </button>
             </div>
           </div>
         </div>
@@ -158,14 +152,7 @@ const ColumnComponent = ({ column, index, totalColumns, savingFiles, renamingFil
 )
 
 export default function ExplorePage() {
-  const { columns, loading, error, savingFiles, renamingFiles, creatingFiles, setEditorRef, handleSaveFile, toggleFileExpansion, handleArchiveFile, addNewColumn, removeWorkspace, handleRenameFile, createNewFile } = useExplore()
-
-  const handleNewColumn = () => {
-    const workspaceName = prompt('Enter new workspace name:')
-    if (workspaceName && workspaceName.trim()) {
-      addNewColumn(workspaceName.trim())
-    }
-  }
+  const { columns, loading, error, savingFiles, renamingFiles, creatingFiles, savedFiles, editingFiles, setEditorRef, handleSaveFile, handleFileEdit, toggleFileExpansion, handleArchiveFile, handleRenameFile, handleTransferFile, getAvailableWorkspacesForFile, createNewFile } = useExplore()
 
   if (loading) {
     return <LoadingView />
@@ -186,27 +173,19 @@ export default function ExplorePage() {
           savingFiles={savingFiles}
           renamingFiles={renamingFiles}
           creatingFiles={creatingFiles}
+          savedFiles={savedFiles}
+          editingFiles={editingFiles}
           setEditorRef={setEditorRef}
           onSaveFile={handleSaveFile}
+          onFileEdit={handleFileEdit}
           onToggleExpansion={toggleFileExpansion}
           onArchiveFile={handleArchiveFile}
-          onRemoveWorkspace={removeWorkspace}
           onRenameFile={handleRenameFile}
+          onTransferFile={handleTransferFile}
+          getAvailableWorkspacesForFile={getAvailableWorkspacesForFile}
           onCreateNewFile={createNewFile}
         />
       ))}
-      
-      {/* Floating New Workspace Button */}
-      <button
-        onClick={handleNewColumn}
-        className="fixed top-24 right-6 z-10 inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-        title="Add new workspace"
-      >
-        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>
-        New Workspace
-      </button>
     </div>
   )
 }

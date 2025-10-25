@@ -1,9 +1,9 @@
 import { Controller, Get, Put, Delete, Body, Query, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { FilesService } from './files.service';
-import { SaveFileDto } from '../../dto/file.dto';
-import { GetFilesResponse, SaveFileResponse, DeleteFileResponse, SaveFileResult, MultipleFilesResponse, FileMetadata } from '@shared/types/files';
-import { GetFilesResponseDto, SaveFileResponseDto, DeleteFileResponseDto } from './dto/response.dto';
+import { SaveFileDto, SaveMultipleFilesDto } from '../../dto/file.dto';
+import { GetFilesResponse, SaveFileResponse, DeleteFileResponse, DeleteMultipleFilesResponse, SaveMultipleFilesResponse, SaveFileResult, MultipleFilesResponse, FileMetadata } from '@shared/types/files';
+import { GetFilesResponseDto, SaveFileResponseDto, DeleteFileResponseDto, SaveMultipleFilesResponseDto, DeleteMultipleFilesResponseDto } from './dto/response.dto';
 
 @ApiTags('Files')
 @Controller('files')
@@ -110,107 +110,187 @@ export class FilesController {
   }
 
   @Put('')
-  @ApiOperation({ summary: 'Save file', description: 'Create a new file or update existing file content' })
-  @ApiQuery({ name: 'file_path', description: 'Path where the file will be saved', required: true })
-  @ApiBody({ type: SaveFileDto })
-  @SwaggerApiResponse({ status: 200, description: 'File updated successfully', type: SaveFileResponseDto })
-  @SwaggerApiResponse({ status: 201, description: 'File created successfully', type: SaveFileResponseDto })
-  @SwaggerApiResponse({ status: 400, description: 'Invalid file path or content' })
-  async saveFile(@Query('file_path') filePath: string, @Body() body: SaveFileDto): Promise<SaveFileResponse> {
+  @ApiOperation({ 
+    summary: 'Save multiple files', 
+    description: 'Create or update multiple files in a single request. Files data is passed in request body as an array.' 
+  })
+  @ApiBody({ type: SaveMultipleFilesDto })
+  @SwaggerApiResponse({ status: 200, description: 'Files processed successfully', type: SaveMultipleFilesResponseDto })
+  @SwaggerApiResponse({ status: 400, description: 'Invalid file data' })
+  async saveFiles(@Body() body: SaveMultipleFilesDto): Promise<SaveMultipleFilesResponse> {
     try {
-      if (!filePath) {
-        throw new BadRequestException('Please provide file_path query parameter');
+      if (!body.files || body.files.length === 0) {
+        throw new BadRequestException('Please provide files array with at least one file');
       }
 
-      const { content, encoding = 'text', commit_message, author_name, author_email, previous_path } = body;
+      const results: SaveFileResult[] = [];
+      const errors: Array<{ file_path: string; error: string; message: string; }> = [];
 
-      if (!content || !commit_message) {
-        throw new BadRequestException('Missing required fields: content, commit_message');
-      }
-
-      // Handle file rename if previous_path is provided
-      if (previous_path && previous_path !== filePath) {
+      // 处理每个文件
+      for (const fileData of body.files) {
         try {
-          // Save the new file
-          const result = await this.filesService.saveFile(filePath, content, encoding, {
-            commitMessage: commit_message,
-            authorName: author_name,
-            authorEmail: author_email
-          });
+          const { file_path, content, encoding = 'text', commit_message, author_name, author_email, previous_path } = fileData;
 
-          // Delete the old file
-          await this.filesService.deleteFile(previous_path);
+          if (!file_path || !content || !commit_message) {
+            errors.push({
+              file_path: file_path || 'unknown',
+              error: 'VALIDATION_ERROR',
+              message: 'Missing required fields: file_path, content, commit_message'
+            });
+            continue;
+          }
 
-          return {
-            success: true,
-            data: {
-              ...result,
-              renamed_from: previous_path,
-              operation: 'rename'
-            },
-            message: 'File renamed successfully'
-          };
+          // Handle file rename if previous_path is provided
+          if (previous_path && previous_path !== file_path) {
+            try {
+              // Use the dedicated rename method for better git history
+              const result = await this.filesService.renameFile(previous_path, file_path, content, encoding, {
+                commitMessage: commit_message,
+                authorName: author_name,
+                authorEmail: author_email
+              });
+
+              results.push({
+                ...result,
+                renamed_from: previous_path,
+                operation: 'rename'
+              });
+
+            } catch (error) {
+              errors.push({
+                file_path,
+                error: 'RENAME_ERROR',
+                message: `Rename operation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+              });
+            }
+          } else {
+            // Normal save operation
+            const result = await this.filesService.saveFile(file_path, content, encoding, {
+              commitMessage: commit_message,
+              authorName: author_name,
+              authorEmail: author_email
+            });
+
+            results.push(result);
+          }
 
         } catch (error) {
-          throw new Error(`Rename operation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          errors.push({
+            file_path: fileData.file_path || 'unknown',
+            error: 'SAVE_ERROR',
+            message: error instanceof Error ? error.message : 'Unknown error occurred'
+          });
         }
-      } else {
-        // Normal save operation
-        const result = await this.filesService.saveFile(filePath, content, encoding, {
-          commitMessage: commit_message,
-          authorName: author_name,
-          authorEmail: author_email
-        });
-
-        return {
-          success: true,
-          data: result,
-          message: result.created ? 'File created successfully' : 'File updated successfully'
-        };
       }
 
+      const total_count = body.files.length;
+      const success_count = results.length;
+      const error_count = errors.length;
+
+      return {
+        success: success_count > 0, // 至少有一个文件成功才算成功
+        data: {
+          results,
+          total_count,
+          success_count,
+          error_count,
+          errors: error_count > 0 ? errors : undefined
+        },
+        message: error_count === 0 
+          ? `All ${success_count} files processed successfully`
+          : `${success_count} files processed successfully, ${error_count} files failed`
+      };
+
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred while saving the file';
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred while saving files';
       
-      if (errorMessage.includes('Invalid file path') || errorMessage.includes('Invalid content')) {
+      if (errorMessage.includes('Invalid') || errorMessage.includes('provide')) {
         throw new BadRequestException(errorMessage);
       }
 
-      throw new InternalServerErrorException('Failed to save file');
+      throw new InternalServerErrorException('Failed to save files');
     }
   }
 
   @Delete('')
-  @ApiOperation({ summary: 'Delete file', description: 'Delete a file from storage' })
-  @ApiQuery({ name: 'file_path', description: 'Path to the file to delete', required: true })
-  @SwaggerApiResponse({ status: 200, description: 'File deleted successfully', type: DeleteFileResponseDto })
-  @SwaggerApiResponse({ status: 400, description: 'Invalid file path' })
-  @SwaggerApiResponse({ status: 404, description: 'File not found' })
-  async deleteFile(@Query('file_path') filePath: string): Promise<DeleteFileResponse> {
+  @ApiOperation({ summary: 'Delete multiple files', description: 'Delete one or multiple files from storage' })
+  @ApiQuery({ 
+    name: 'file_paths', 
+    description: 'Array of file paths to delete', 
+    required: true,
+    type: [String],
+    example: ['file.txt', 'folder/another.txt']
+  })
+  @SwaggerApiResponse({ status: 200, description: 'Files processed successfully', type: DeleteMultipleFilesResponseDto })
+  @SwaggerApiResponse({ status: 400, description: 'Invalid file paths' })
+  @SwaggerApiResponse({ status: 404, description: 'One or more files not found' })
+  async deleteFiles(@Query('file_paths') filePaths: string | string[]): Promise<DeleteMultipleFilesResponse> {
     try {
-      if (!filePath) {
-        throw new BadRequestException('Please provide file_path query parameter');
+      // 处理file_paths参数 - 可能是单个字符串或数组
+      let processedFilePaths: string[];
+      if (typeof filePaths === 'string') {
+        // 如果是字符串，尝试解析为JSON数组，否则当作单个文件
+        try {
+          processedFilePaths = JSON.parse(filePaths);
+        } catch {
+          processedFilePaths = [filePaths];
+        }
+      } else if (Array.isArray(filePaths)) {
+        processedFilePaths = filePaths;
+      } else {
+        throw new BadRequestException('Please provide file_paths parameter as string or array');
       }
 
-      await this.filesService.deleteFile(filePath);
+      if (!processedFilePaths || processedFilePaths.length === 0) {
+        throw new BadRequestException('Please provide at least one file path');
+      }
+
+      const results: Array<{ file_path: string; deleted: boolean; }> = [];
+      const errors: Array<{ file_path: string; error: string; message: string; }> = [];
+
+      // 处理每个文件删除
+      for (const filePath of processedFilePaths) {
+        try {
+          await this.filesService.deleteFile(filePath);
+          results.push({
+            file_path: filePath,
+            deleted: true
+          });
+        } catch (error) {
+          errors.push({
+            file_path: filePath,
+            error: 'DELETE_ERROR',
+            message: error instanceof Error ? error.message : 'Unknown error occurred'
+          });
+        }
+      }
+
+      const total_count = processedFilePaths.length;
+      const success_count = results.length;
+      const error_count = errors.length;
 
       return {
-        success: true,
-        message: 'File deleted successfully'
+        success: success_count > 0, // 至少有一个文件成功删除才算成功
+        data: {
+          results,
+          total_count,
+          success_count,
+          error_count,
+          errors: error_count > 0 ? errors : undefined
+        },
+        message: error_count === 0 
+          ? `All ${success_count} files deleted successfully`
+          : `${success_count} files deleted successfully, ${error_count} files failed`
       };
 
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred while deleting the file';
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred while deleting files';
       
-      if (errorMessage.includes('does not exist')) {
-        throw new NotFoundException(errorMessage);
-      }
-
-      if (errorMessage.includes('Invalid file path')) {
+      if (errorMessage.includes('Invalid') || errorMessage.includes('provide')) {
         throw new BadRequestException(errorMessage);
       }
 
-      throw new InternalServerErrorException('Failed to delete file');
+      throw new InternalServerErrorException('Failed to delete files');
     }
   }
 }

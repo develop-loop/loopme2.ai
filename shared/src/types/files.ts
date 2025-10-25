@@ -65,8 +65,12 @@ export interface SaveFileRequest {
   previous_path?: string;
 }
 
+export interface SaveMultipleFilesRequest {
+  files: SaveFileRequest[];
+}
+
 export interface DeleteFileRequest {
-  file_path: string;
+  file_paths: string[];
 }
 
 // ============================================================================
@@ -85,8 +89,43 @@ export interface SaveFileResponse {
   message?: string;
 }
 
+export interface SaveMultipleFilesResponse {
+  success: boolean;
+  data: {
+    results: SaveFileResult[];
+    total_count: number;
+    success_count: number;
+    error_count: number;
+    errors?: Array<{
+      file_path: string;
+      error: string;
+      message: string;
+    }>;
+  };
+  message?: string;
+}
+
 export interface DeleteFileResponse {
   success: boolean;
+  message?: string;
+}
+
+export interface DeleteMultipleFilesResponse {
+  success: boolean;
+  data: {
+    results: Array<{
+      file_path: string;
+      deleted: boolean;
+    }>;
+    total_count: number;
+    success_count: number;
+    error_count: number;
+    errors?: Array<{
+      file_path: string;
+      error: string;
+      message: string;
+    }>;
+  };
   message?: string;
 }
 
@@ -105,5 +144,5 @@ export interface SaveFileQueryParams {
 }
 
 export interface DeleteFileQueryParams {
-  file_path: string;
+  file_paths: string; // URL中为JSON字符串
 }

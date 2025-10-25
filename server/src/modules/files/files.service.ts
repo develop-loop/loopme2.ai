@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { FileInfo, FileMetadata, SaveFileResult, MultipleFilesResponse } from '@shared/types/files';
+import { GitUtil } from '../../utils/git.util';
 
 interface SaveFileOptions {
   commitMessage: string;
@@ -12,6 +13,7 @@ interface SaveFileOptions {
 @Injectable()
 export class FilesService {
   private readonly storageDir = this.getStorageDir();
+  private readonly gitUtil = new GitUtil(this.storageDir);
 
   private getStorageDir(): string {
     if (process.env.NODE_ENV === 'production') {
@@ -66,6 +68,7 @@ export class FilesService {
     const ext = path.extname(filePath).toLowerCase();
     return binaryExtensions.includes(ext);
   }
+
 
   async getFile(filePath: string, requestedEncoding?: string): Promise<FileInfo> {
     // Security check: prevent directory traversal
@@ -233,12 +236,19 @@ export class FilesService {
       // Get file stats
       const stats = await fs.stat(fullPath);
 
-      // TODO: Implement actual git commit functionality
-      // For now, we'll just log the commit information
-      console.log(`File ${fileExists ? 'updated' : 'created'}: ${filePath}`);
-      console.log(`Commit message: ${options.commitMessage}`);
-      if (options.authorName) console.log(`Author: ${options.authorName}`);
-      if (options.authorEmail) console.log(`Email: ${options.authorEmail}`);
+      // Perform git commit
+      try {
+        await this.gitUtil.commit({
+          commitMessage: options.commitMessage,
+          authorName: options.authorName,
+          authorEmail: options.authorEmail,
+          filePath: filePath
+        });
+        console.log(`Git commit successful for file: ${filePath}`);
+      } catch (error) {
+        console.warn(`Git commit failed for file ${filePath}: ${error}`);
+        // Don't fail the entire operation if git commit fails
+      }
 
       return {
         file_path: filePath,
@@ -250,6 +260,88 @@ export class FilesService {
 
     } catch (error) {
       throw new Error(`Failed to save file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async renameFile(
+    oldPath: string,
+    newPath: string,
+    content: string,
+    encoding: string = 'text',
+    options: SaveFileOptions
+  ): Promise<SaveFileResult> {
+    // Validate paths
+    if (!this.isSafePath(oldPath) || !this.isSafePath(newPath)) {
+      throw new Error('Invalid file path: contains invalid characters or attempts directory traversal');
+    }
+
+    const oldFullPath = path.join(this.storageDir, oldPath);
+    const newFullPath = path.join(this.storageDir, newPath);
+    const newDirPath = path.dirname(newFullPath);
+
+    try {
+      // Check if old file exists
+      await fs.stat(oldFullPath);
+
+      // Ensure new directory exists
+      await fs.mkdir(newDirPath, { recursive: true });
+
+      // Process content based on encoding
+      let fileContent: string | Buffer;
+      if (encoding === 'base64') {
+        fileContent = Buffer.from(content, 'base64');
+      } else {
+        fileContent = content;
+      }
+
+      // Write new file
+      await fs.writeFile(newFullPath, fileContent);
+
+      // Get file stats
+      const stats = await fs.stat(newFullPath);
+
+      // Perform git operations for rename
+      try {
+        // Add the new file and remove the old file
+        await this.gitUtil.addFiles(newPath);
+        await this.gitUtil.removeFiles(oldPath);
+        
+        // Commit the rename operation
+        await this.gitUtil.commit({
+          commitMessage: options.commitMessage,
+          authorName: options.authorName,
+          authorEmail: options.authorEmail
+        });
+        
+        console.log(`Git commit successful for file rename: ${oldPath} -> ${newPath}`);
+      } catch (error) {
+        console.warn(`Git commit failed for file rename ${oldPath} -> ${newPath}: ${error}`);
+        // If git fails, we still need to clean up the old file
+        try {
+          await fs.unlink(oldFullPath);
+        } catch (cleanupError) {
+          console.warn(`Failed to cleanup old file after git error: ${cleanupError}`);
+        }
+      }
+
+      // Remove the old file from filesystem (this should normally be handled by git rm)
+      try {
+        await fs.unlink(oldFullPath);
+      } catch (error) {
+        // File might already be deleted by git rm, which is fine
+        console.log(`Old file cleanup: ${error}`);
+      }
+
+      return {
+        file_path: newPath,
+        size: stats.size,
+        encoding: encoding,
+        last_modified: stats.mtime.toISOString(),
+        created: false // This is a rename, not a creation
+      };
+
+    } catch (error) {
+      throw new Error(`Failed to rename file: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -267,6 +359,20 @@ export class FilesService {
       
       // Delete the file
       await fs.unlink(fullPath);
+      
+      // Perform git commit for file deletion
+      try {
+        await this.gitUtil.removeFiles(filePath);
+        await this.gitUtil.commit({
+          commitMessage: `Delete ${filePath}`,
+          authorName: 'System',
+          authorEmail: 'system@loopme3.ai'
+        });
+        console.log(`Git commit successful for file deletion: ${filePath}`);
+      } catch (error) {
+        console.warn(`Git commit failed for file deletion ${filePath}: ${error}`);
+        // Don't fail the entire operation if git commit fails
+      }
       
       console.log(`File deleted: ${filePath}`);
       

@@ -115,6 +115,78 @@ export class SaveFileResponseDto {
   message?: string;
 }
 
+export class SaveMultipleFilesDataDto {
+  @ApiProperty({ type: [SaveFileResultDto], description: 'Array of save operation results' })
+  results: SaveFileResultDto[];
+
+  @ApiProperty({ example: 2, description: 'Total number of files processed' })
+  total_count: number;
+
+  @ApiProperty({ example: 2, description: 'Number of successfully saved files' })
+  success_count: number;
+
+  @ApiProperty({ example: 0, description: 'Number of files that failed to save' })
+  error_count: number;
+
+  @ApiProperty({ 
+    type: [FileErrorDto],
+    description: 'Array of error details for failed files',
+    required: false
+  })
+  errors?: FileErrorDto[];
+}
+
+export class SaveMultipleFilesResponseDto {
+  @ApiProperty({ example: true, description: 'Operation success status' })
+  success: boolean;
+
+  @ApiProperty({ type: SaveMultipleFilesDataDto, description: 'Save operation results' })
+  data: SaveMultipleFilesDataDto;
+
+  @ApiProperty({ example: 'All files processed successfully', description: 'Response message', required: false })
+  message?: string;
+}
+
+export class DeleteFileResultDto {
+  @ApiProperty({ example: 'test.txt', description: 'File path' })
+  file_path: string;
+
+  @ApiProperty({ example: true, description: 'Whether the file was successfully deleted' })
+  deleted: boolean;
+}
+
+export class DeleteMultipleFilesDataDto {
+  @ApiProperty({ type: [DeleteFileResultDto], description: 'Array of delete operation results' })
+  results: DeleteFileResultDto[];
+
+  @ApiProperty({ example: 2, description: 'Total number of files processed' })
+  total_count: number;
+
+  @ApiProperty({ example: 2, description: 'Number of successfully deleted files' })
+  success_count: number;
+
+  @ApiProperty({ example: 0, description: 'Number of files that failed to delete' })
+  error_count: number;
+
+  @ApiProperty({ 
+    type: [FileErrorDto],
+    description: 'Array of error details for failed files',
+    required: false
+  })
+  errors?: FileErrorDto[];
+}
+
+export class DeleteMultipleFilesResponseDto {
+  @ApiProperty({ example: true, description: 'Operation success status' })
+  success: boolean;
+
+  @ApiProperty({ type: DeleteMultipleFilesDataDto, description: 'Delete operation results' })
+  data: DeleteMultipleFilesDataDto;
+
+  @ApiProperty({ example: 'All files deleted successfully', description: 'Response message', required: false })
+  message?: string;
+}
+
 export class DeleteFileResponseDto {
   @ApiProperty({ example: true, description: 'Operation success status' })
   success: boolean;
