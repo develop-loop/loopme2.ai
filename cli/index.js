@@ -11,7 +11,7 @@ function startServer() {
   process.env.NODE_ENV = 'production';
   
   // 找到server的main.js文件
-  const serverPath = path.join(__dirname, '..', 'dist', 'server', 'main.js');
+  const serverPath = path.join(__dirname, '..', 'dist', 'server', 'server', 'src', 'main.js');
   
   if (!fs.existsSync(serverPath)) {
     console.error('❌ Server files not found. Please run "npm run build" first.');
