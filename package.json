@@ -30,11 +30,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/develop-loop/turbome.ai.git"
+    "url": "https://github.com/gitbase-ai/turbome.ai.git"
   },
-  "homepage": "https://github.com/develop-loop/turbome.ai#readme",
+  "homepage": "https://github.com/gitbase-ai/turbome.ai#readme",
   "bugs": {
-    "url": "https://github.com/develop-loop/turbome.ai/issues"
+    "url": "https://github.com/gitbase-ai/turbome.ai/issues"
   },
   "workspaces": [
     "client",

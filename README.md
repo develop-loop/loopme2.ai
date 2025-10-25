@@ -114,7 +114,7 @@ fetch('http://localhost:7788/api/v1/workspaces')
 
 ```bash
 # Clone the repository
-git clone https://github.com/develop-loop/turbome.ai.git
+git clone https://github.com/gitbase-ai/turbome.ai.git
 cd turbome.ai
 
 # Install dependencies
@@ -256,7 +256,7 @@ This project is licensed under the MIT License.
 
 ## 🐛 Issues
 
-Found a bug or have a suggestion? Please open an issue at [GitHub Issues](https://github.com/develop-loop/turbome.ai/issues).
+Found a bug or have a suggestion? Please open an issue at [GitHub Issues](https://github.com/gitbase-ai/turbome.ai/issues).
 
 ## 🙏 Acknowledgments
 
