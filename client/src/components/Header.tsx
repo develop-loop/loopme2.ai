@@ -3,26 +3,38 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import {
-  Dialog,
-  DialogPanel,
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
-  Popover,
-  PopoverButton,
-  PopoverGroup,
-  PopoverPanel,
-} from '@headlessui/react'
+  Menu,
+  Search,
+  X,
+  ChevronDown,
+  Clock
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
-  Bars3Icon,
-  ClockIcon,
-  XMarkIcon,
-  MagnifyingGlassIcon,
-} from '@heroicons/react/24/outline'
-import { ChevronDownIcon } from '@heroicons/react/20/solid'
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu'
+import { cn } from '@/lib/utils'
 
 const analyticsItems = [
-  { name: 'Timeline', description: 'View git commit history and project timeline', href: '/timeline', icon: ClockIcon },
+  {
+    name: 'Timeline',
+    description: 'View git commit history and project timeline',
+    href: '/timeline',
+    icon: Clock
+  },
 ]
 
 interface SearchResult {
@@ -57,7 +69,7 @@ export default function Header() {
     try {
       const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=10`)
       const data = await response.json()
-      
+
       if (data.success) {
         setSearchResults(data.data.results)
       } else {
@@ -120,68 +132,69 @@ export default function Header() {
   }, [])
 
   return (
-    <header className="bg-white dark:bg-gray-900">
-      <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-8">
+    <header className="border-b bg-background">
+      <nav className="flex items-center justify-between p-6 lg:px-8">
         <div className="flex items-center lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5 mr-4">
             <span className="sr-only">TurboMe</span>
-            <div className="h-8 w-8 bg-indigo-600 rounded-md flex items-center justify-center">
-              <span className="text-white font-bold text-sm">TM</span>
+            <div className="h-8 w-8 bg-primary rounded-md flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">TM</span>
             </div>
           </Link>
-          
+
           {/* Search Bar */}
           <div className="relative hidden lg:block lg:max-w-md lg:flex-1" ref={searchContainerRef}>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                <Search className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               </div>
-              <input
+              <Input
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+                className="pl-10 pr-3"
                 placeholder="Search files and content..."
                 autoComplete="off"
               />
               {isSearching && (
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                 </div>
               )}
             </div>
 
             {/* Search Results Dropdown */}
             {showResults && (searchResults.length > 0 || searchQuery.trim()) && (
-              <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+              <div className="absolute z-50 mt-1 w-full bg-popover border rounded-md shadow-lg max-h-60 py-1 overflow-auto">
                 {searchResults.length > 0 ? (
                   searchResults.map((result, index) => (
                     <button
                       key={`${result.path}-${index}`}
                       onClick={() => handleResultClick(result)}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-700"
+                      className="w-full text-left px-4 py-2 hover:bg-accent focus:outline-none focus:bg-accent"
                     >
                       <div className="flex items-center">
                         <div className="flex-shrink-0">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                            result.type === 'file' 
-                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' 
+                          <span className={cn(
+                            "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
+                            result.type === 'file'
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                               : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          }`}>
+                          )}>
                             {result.type === 'file' ? 'File' : 'Content'}
                           </span>
                         </div>
                         <div className="ml-3 flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          <p className="text-sm font-medium truncate">
                             {result.filename}
                           </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                          <p className="text-sm text-muted-foreground truncate">
                             {result.path}
                             {result.line && ` (line ${result.line})`}
                           </p>
                           {result.matchedText && (
-                            <p className="text-xs text-gray-600 dark:text-gray-300 truncate mt-1">
+                            <p className="text-xs text-muted-foreground truncate mt-1">
                               {result.matchedText}
                             </p>
                           )}
@@ -190,7 +203,7 @@ export default function Header() {
                     </button>
                   ))
                 ) : searchQuery.trim() && !isSearching ? (
-                  <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                  <div className="px-4 py-2 text-sm text-muted-foreground">
                     No results found for &quot;{searchQuery}&quot;
                   </div>
                 ) : null}
@@ -198,144 +211,124 @@ export default function Header() {
             )}
           </div>
         </div>
+
+        {/* Mobile menu button */}
         <div className="flex lg:hidden">
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(true)}
-            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 dark:text-gray-400"
-          >
-            <span className="sr-only">Open main menu</span>
-            <Bars3Icon aria-hidden="true" className="size-6" />
-          </button>
-        </div>
-        <PopoverGroup className="hidden lg:flex lg:gap-x-12 lg:ml-auto lg:mr-8">
-          <Popover className="relative">
-            <PopoverButton className="flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900 dark:text-white">
-              Analytics
-              <ChevronDownIcon aria-hidden="true" className="size-5 flex-none text-gray-400 dark:text-gray-500" />
-            </PopoverButton>
-
-            <PopoverPanel
-              transition
-              className="absolute left-1/2 z-10 mt-3 w-screen max-w-md -translate-x-1/2 overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-gray-900/5 transition data-closed:translate-y-1 data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in dark:bg-gray-800 dark:ring-white/10"
-            >
-              <div className="p-4">
-                {analyticsItems.map((item) => (
-                  <div
-                    key={item.name}
-                    className="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm/6 hover:bg-gray-50 dark:hover:bg-white/5"
-                  >
-                    <div className="flex size-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white dark:bg-gray-700/50 dark:group-hover:bg-gray-700">
-                      <item.icon
-                        aria-hidden="true"
-                        className="size-6 text-gray-600 group-hover:text-indigo-600 dark:text-gray-400 dark:group-hover:text-white"
-                      />
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <span className="sr-only">Open main menu</span>
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-sm">
+              <SheetHeader>
+                <SheetTitle>
+                  <Link href="/" className="flex items-center">
+                    <div className="h-8 w-8 bg-primary rounded-md flex items-center justify-center">
+                      <span className="text-primary-foreground font-bold text-sm">TM</span>
                     </div>
-                    <div className="flex-auto">
-                      <Link href={item.href} className="block font-semibold text-gray-900 dark:text-white">
-                        {item.name}
-                        <span className="absolute inset-0" />
+                    <span className="ml-2">TurboMe</span>
+                  </Link>
+                </SheetTitle>
+              </SheetHeader>
+              <div className="mt-6 flow-root">
+                <div className="space-y-2">
+                  <div className="space-y-2">
+                    <Button variant="ghost" className="w-full justify-start" asChild>
+                      <Link href="/timeline">
+                        <Clock className="mr-2 h-4 w-4" />
+                        Timeline
                       </Link>
-                      <p className="mt-1 text-gray-600 dark:text-gray-400">{item.description}</p>
-                    </div>
+                    </Button>
                   </div>
-                ))}
-              </div>
-            </PopoverPanel>
-          </Popover>
-
-          <Link href="/explore" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
-            Explore
-          </Link>
-          <Link href="/conversation" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
-            Conversation
-          </Link>
-          <Link href="/api-docs" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
-            API
-          </Link>
-        </PopoverGroup>
-        <div className="hidden lg:flex">
-          <Link href="/settings" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
-            Settings
-          </Link>
-        </div>
-      </nav>
-      <Dialog open={mobileMenuOpen} onClose={setMobileMenuOpen} className="lg:hidden">
-        <div className="fixed inset-0 z-50" />
-        <DialogPanel 
-          className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white p-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:bg-gray-900 dark:sm:ring-gray-100/10"
-          style={{ overscrollBehavior: 'none' }}
-        >
-          <div className="flex items-center justify-between">
-            <Link href="/" className="-m-1.5 p-1.5">
-              <span className="sr-only">TurboMe</span>
-              <div className="h-8 w-8 bg-indigo-600 rounded-md flex items-center justify-center">
-                <span className="text-white font-bold text-sm">TM</span>
-              </div>
-            </Link>
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(false)}
-              className="-m-2.5 rounded-md p-2.5 text-gray-700 dark:text-gray-400"
-            >
-              <span className="sr-only">Close menu</span>
-              <XMarkIcon aria-hidden="true" className="size-6" />
-            </button>
-          </div>
-          <div className="mt-6 flow-root">
-            <div className="-my-6 divide-y divide-gray-500/10 dark:divide-white/10">
-              <div className="space-y-2 py-6">
-                <div className="-mx-3">
-                  <Disclosure>
-                    <DisclosureButton className="group flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-white/5">
-                      Analytics
-                      <ChevronDownIcon aria-hidden="true" className="size-5 flex-none group-data-open:rotate-180" />
-                    </DisclosureButton>
-                    <DisclosurePanel className="mt-2 space-y-2">
-                      {analyticsItems.map((item) => (
-                        <DisclosureButton
-                          key={item.name}
-                          as={Link}
-                          href={item.href}
-                          className="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-white/5"
-                        >
-                          {item.name}
-                        </DisclosureButton>
-                      ))}
-                    </DisclosurePanel>
-                  </Disclosure>
+                  <Button variant="ghost" className="w-full justify-start" asChild>
+                    <Link href="/explore">Explore</Link>
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-start" asChild>
+                    <Link href="/conversation">Conversation</Link>
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-start" asChild>
+                    <Link href="/api-docs">API</Link>
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-start" asChild>
+                    <Link href="/settings">Settings</Link>
+                  </Button>
                 </div>
-                <Link
-                  href="/explore"
-                  className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-white/5"
-                >
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        {/* Desktop Navigation */}
+        <NavigationMenu className="hidden lg:flex lg:ml-auto lg:mr-8">
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>Analytics</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[400px] gap-3 p-4">
+                  {analyticsItems.map((item) => (
+                    <li key={item.name}>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          href={item.href}
+                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                              <item.icon className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium leading-none">{item.name}</div>
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground mt-1">
+                                {item.description}
+                              </p>
+                            </div>
+                          </div>
+                        </Link>
+                      </NavigationMenuLink>
+                    </li>
+                  ))}
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink asChild>
+                <Link href="/explore" className={cn(
+                  "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50"
+                )}>
                   Explore
                 </Link>
-                <Link
-                  href="/conversation"
-                  className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-white/5"
-                >
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink asChild>
+                <Link href="/conversation" className={cn(
+                  "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50"
+                )}>
                   Conversation
                 </Link>
-                <Link
-                  href="/api-docs"
-                  className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-white/5"
-                >
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink asChild>
+                <Link href="/api-docs" className={cn(
+                  "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50"
+                )}>
                   API
                 </Link>
-              </div>
-              <div className="py-6">
-                <Link
-                  href="/settings"
-                  className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-white/5"
-                >
-                  Settings
-                </Link>
-              </div>
-            </div>
-          </div>
-        </DialogPanel>
-      </Dialog>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+
+        {/* Desktop Settings Link */}
+        <div className="hidden lg:flex">
+          <Button variant="ghost" asChild>
+            <Link href="/settings">Settings</Link>
+          </Button>
+        </div>
+      </nav>
     </header>
   )
 }
