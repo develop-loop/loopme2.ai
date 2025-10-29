@@ -21,6 +21,7 @@ out/
 .idea/
 *.swp
 *.swo
+*.tgz
 
 # OS
 .DS_Store
