@@ -7,7 +7,7 @@ export class AppService {
     return {
       success: true,
       data: 'Hello World from NestJS!',
-      message: 'Welcome to LoopMe3 API',
+      message: 'Welcome to TurboMe API',
     };
   }
 }
